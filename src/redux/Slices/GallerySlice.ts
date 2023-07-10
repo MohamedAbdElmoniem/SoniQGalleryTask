@@ -1,6 +1,12 @@
 import {createSlice} from '@reduxjs/toolkit';
 import {GalleryImageModel} from '../../@types/GalleryImageModel';
 import moment from 'moment';
+import {
+  findCommentIndexById,
+  findImageById,
+  findImageIndexById,
+  generateCommentId,
+} from '../../utils/helpers';
 
 export interface CommentState {
   id?: number;
@@ -8,7 +14,7 @@ export interface CommentState {
   dateTime?: string;
 }
 
-interface ImageState extends GalleryImageModel {
+export interface ImageState extends GalleryImageModel {
   comments: Array<CommentState>;
 }
 
@@ -29,37 +35,29 @@ export const GallerySlice = createSlice({
       state.images = state.images.map(image => ({...image, comments: []}));
     },
     addComment: (state, {payload}) => {
-      const currentComments = state.images.find(
-        img => img.id === payload.imageId,
-      )?.comments;
-      const currentCommentsLength = currentComments?.length || 0;
-      currentComments?.push({
+      const image = findImageById(state.images, payload.imageId);
+      const comments = image?.comments;
+
+      comments?.push({
         text: payload.comment,
         dateTime: moment().toISOString(),
-        id: !currentCommentsLength
-          ? 1
-          : ((currentComments &&
-              currentComments[currentCommentsLength - 1].id) ||
-              0) + 1,
+        id: generateCommentId(comments),
       });
+
       state.images = [...state.images];
     },
     deleteComment: (state, {payload}) => {
-      const imageIndex = state.images.findIndex(
-        img => img.id === payload.imageId,
-      );
+      const imageIndex = findImageIndexById(state.images, payload.imageId);
 
       state.images[imageIndex].comments = state.images[
         imageIndex
       ].comments.filter(comment => comment.id !== payload.commentId);
     },
     updateComment: (state, {payload}) => {
-      const imageIndex = state.images.findIndex(
-        img => img.id === payload.imageId,
-      );
-
-      const commentIndex = state.images[imageIndex].comments.findIndex(
-        com => com.id === payload.id,
+      const imageIndex = findImageIndexById(state.images, payload.imageId);
+      const commentIndex = findCommentIndexById(
+        state.images[imageIndex].comments,
+        payload.id,
       );
 
       state.images[imageIndex].comments[commentIndex] = {...payload};

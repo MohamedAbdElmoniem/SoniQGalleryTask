@@ -15,8 +15,10 @@ const AppModal: React.FC<AppModalProps> = ({
   isVisible,
 }) => {
   return (
-    <Modal style={styles.wrapper} isVisible={isVisible}>
-      <AppSafeArea isDark={isDark}>{children}</AppSafeArea>
+    <Modal style={styles.wrapper} isVisible={isVisible} testID="modal">
+      <AppSafeArea testID="appSafeArea" isDark={isDark}>
+        {children}
+      </AppSafeArea>
     </Modal>
   );
 };
